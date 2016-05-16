@@ -63,8 +63,15 @@ class Hiera
         Hiera.debug("Looking up %s in Module Data backend" % key)
 
         module_name = begin
-          scope["module_name"]
+          scope["module"]
         rescue Puppet::ParseError # Gets thrown if not in a module and strict_variables = true
+        end
+
+        if module_name.nil?
+          module_name = begin
+            scope["module_name"]
+          rescue Puppet::ParseError # Gets thrown if not in a module and strict_variables = true
+          end
         end
 
         unless module_name
@@ -72,9 +79,9 @@ class Hiera
           return no_answer
         end
 
-        config = load_module_config(scope["module_name"], scope["::environment"])
+        config = load_module_config(module_name, scope["::environment"])
         unless config["path"]
-          Hiera.debug("Could not find a path to the module '%s' in environment '%s'" % [scope["module_name"], scope["::environment"]])
+          Hiera.debug("Could not find a path to the module '%s' in environment '%s'" % [module_name, scope["::environment"]])
           return no_answer
         end
 
